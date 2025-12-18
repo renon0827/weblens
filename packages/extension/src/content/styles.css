@@ -1,0 +1,15 @@
+/* weblens Content Script Styles */
+
+.weblens-highlight {
+  transition: none !important;
+}
+
+.weblens-label {
+  transition: none !important;
+  border-radius: 2px;
+}
+
+/* Ensure elements don't interfere with page interaction when inactive */
+#weblens-overlay {
+  transition: none !important;
+}
