@@ -1,8 +1,9 @@
 import { ClaudeExecutor, type ClaudeExecutorCallbacks } from './executor';
 import { buildPrompt } from './promptBuilder';
-import { setSessionId, addMessage, getConversation } from '../storage/fileStore';
+import { setSessionId, addMessage, getConversation, updateConversation } from '../storage/fileStore';
 import type { ElementInfo, Message } from '../storage/types';
 import { logger } from '../utils/logger';
+import { generateTitle } from '../utils/titleGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ActiveSession {
@@ -39,6 +40,13 @@ export class SessionManager {
       timestamp: new Date().toISOString(),
     };
     await addMessage(conversationId, userMessage);
+
+    // Auto-generate title from first message if title is still default
+    if (conversation.messages.length === 0 && conversation.title === '新規会話') {
+      const autoTitle = generateTitle(message);
+      await updateConversation(conversationId, { title: autoTitle });
+      logger.info(`Auto-generated title for conversation ${conversationId}`, { title: autoTitle });
+    }
 
     const prompt = buildPrompt(message, elements);
     const executor = new ClaudeExecutor();
