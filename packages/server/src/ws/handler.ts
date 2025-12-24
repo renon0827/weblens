@@ -8,6 +8,7 @@ interface ChatPayload {
   conversationId: string;
   message: string;
   elements: ElementInfo[];
+  pageUrl?: string;
 }
 
 interface AbortPayload {
@@ -26,7 +27,8 @@ function isChatPayload(payload: unknown): payload is ChatPayload {
     p !== null &&
     typeof p.conversationId === 'string' &&
     typeof p.message === 'string' &&
-    Array.isArray(p.elements)
+    Array.isArray(p.elements) &&
+    (p.pageUrl === undefined || typeof p.pageUrl === 'string')
   );
 }
 
@@ -85,15 +87,16 @@ async function handleChatMessage(connectionId: string, payload: unknown): Promis
     return;
   }
 
-  const { conversationId, message, elements } = payload;
+  const { conversationId, message, elements, pageUrl } = payload;
 
   logger.info('Processing chat message', {
     conversationId,
     elementCount: elements.length,
+    pageUrl,
   });
 
   try {
-    await sessionManager.executeChat(conversationId, message, elements, {
+    await sessionManager.executeChat(conversationId, message, elements, pageUrl, {
       onChunk: (content, messageId) => {
         logger.info('Sending chunk to client', { connectionId, messageId, contentLength: content.length });
         connectionManager.send(connectionId, {

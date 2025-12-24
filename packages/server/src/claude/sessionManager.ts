@@ -18,6 +18,7 @@ export class SessionManager {
     conversationId: string,
     message: string,
     elements: ElementInfo[],
+    pageUrl: string | undefined,
     callbacks: {
       onChunk: (content: string, messageId: string) => void;
       onComplete: (fullContent: string, messageId: string) => void;
@@ -48,7 +49,7 @@ export class SessionManager {
       logger.info(`Auto-generated title for conversation ${conversationId}`, { title: autoTitle });
     }
 
-    const prompt = buildPrompt(message, elements);
+    const prompt = buildPrompt(message, elements, pageUrl);
     const executor = new ClaudeExecutor();
     const assistantMessageId = uuidv4();
 

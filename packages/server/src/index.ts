@@ -1,12 +1,14 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import { join } from 'path';
 import { registerRoutes } from './api/routes';
 import { handleWebSocket } from './ws/handler';
 import { logger } from './utils/logger';
 
 const HOST = 'localhost';
 const PORT = 3456;
+const DATA_DIR = join(process.cwd(), '.weblens');
 
 async function main(): Promise<void> {
   const app = Fastify({
@@ -35,6 +37,7 @@ async function main(): Promise<void> {
     await app.listen({ host: HOST, port: PORT });
     logger.info(`Server running at http://${HOST}:${PORT}`);
     logger.info(`WebSocket available at ws://${HOST}:${PORT}/ws`);
+    logger.info(`Data directory: ${DATA_DIR}`);
   } catch (err) {
     logger.error('Failed to start server', err);
     process.exit(1);

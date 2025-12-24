@@ -1,15 +1,11 @@
 import { readdir, readFile, writeFile, unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import type { Conversation, ConversationData, Message } from './types';
 import { logger } from '../utils/logger';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const DATA_DIR = join(__dirname, '../../data/conversations');
+// 作業フォルダの.weblensディレクトリに保存
+const DATA_DIR = join(process.cwd(), '.weblens', 'conversations');
 
 async function ensureDataDir(): Promise<void> {
   if (!existsSync(DATA_DIR)) {

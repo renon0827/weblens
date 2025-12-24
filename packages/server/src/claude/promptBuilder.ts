@@ -1,7 +1,11 @@
 import type { ElementInfo } from '../storage/types';
 
-export function buildPrompt(message: string, elements: ElementInfo[]): string {
+export function buildPrompt(message: string, elements: ElementInfo[], pageUrl?: string): string {
   let prompt = '';
+
+  if (pageUrl) {
+    prompt += `## ページURL\n\n${pageUrl}\n\n`;
+  }
 
   if (elements.length > 0) {
     prompt += '## 対象要素\n\n';

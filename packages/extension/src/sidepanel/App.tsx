@@ -145,6 +145,15 @@ export function App() {
       await selectConversation(convId);
     }
 
+    // Get current tab URL
+    let pageUrl: string | undefined;
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      pageUrl = tabs[0]?.url;
+    } catch (err) {
+      console.warn('Failed to get current tab URL:', err);
+    }
+
     // Add user message to local state
     addUserMessage(content, selectedElements.value);
 
@@ -159,6 +168,7 @@ export function App() {
         conversationId: convId,
         message: content,
         elements: selectedElements.value,
+        pageUrl,
       },
     });
 

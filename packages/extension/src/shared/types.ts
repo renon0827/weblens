@@ -92,6 +92,7 @@ export interface ChatMessage {
     conversationId: string;
     message: string;
     elements: ElementInfo[];
+    pageUrl?: string;
   };
 }
 
