@@ -53,6 +53,9 @@ export interface ParentInfo {
   className: string;
 }
 
+// File attachment - file path (server reads the content)
+export type FileAttachment = string;
+
 // Conversation and message types
 export interface Conversation {
   id: string;
@@ -67,6 +70,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   elements?: ElementInfo[];
+  attachments?: FileAttachment[];
   fileOperations?: FileOperation[];
   timestamp: string;
 }
@@ -93,6 +97,7 @@ export interface ChatMessage {
     conversationId: string;
     message: string;
     elements: ElementInfo[];
+    attachments?: FileAttachment[];
     pageUrl?: string;
   };
 }

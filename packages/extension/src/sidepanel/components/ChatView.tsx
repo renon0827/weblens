@@ -81,6 +81,23 @@ export function ChatView({ messages, streamingContent, streamingMessageId, isPro
                   </div>
                 </details>
               )}
+              {msg.attachments && msg.attachments.length > 0 && (
+                <details class="message-elements-details">
+                  <summary class="message-elements-summary">
+                    📄 添付ファイル ({msg.attachments.length}件)
+                  </summary>
+                  <div class="message-elements-list">
+                    {msg.attachments.map((filePath, index) => (
+                      <div key={index} class="message-element-item">
+                        <div class="element-selector">
+                          <span class="element-number-badge">📄</span>
+                          <code>{filePath}</code>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
               {/* Show saved file operations for assistant messages */}
               {msg.role === 'assistant' && msg.fileOperations && msg.fileOperations.length > 0 && (
                 <details class="file-operations-details">

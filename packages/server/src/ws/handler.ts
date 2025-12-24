@@ -2,12 +2,13 @@ import type { WebSocket, RawData } from 'ws';
 import { connectionManager } from './connections';
 import { sessionManager } from '../claude/sessionManager';
 import { logger } from '../utils/logger';
-import type { ElementInfo } from '../storage/types';
+import type { ElementInfo, FileAttachment } from '../storage/types';
 
 interface ChatPayload {
   conversationId: string;
   message: string;
   elements: ElementInfo[];
+  attachments?: FileAttachment[];
   pageUrl?: string;
 }
 
@@ -28,6 +29,7 @@ function isChatPayload(payload: unknown): payload is ChatPayload {
     typeof p.conversationId === 'string' &&
     typeof p.message === 'string' &&
     Array.isArray(p.elements) &&
+    (p.attachments === undefined || Array.isArray(p.attachments)) &&
     (p.pageUrl === undefined || typeof p.pageUrl === 'string')
   );
 }
@@ -87,16 +89,17 @@ async function handleChatMessage(connectionId: string, payload: unknown): Promis
     return;
   }
 
-  const { conversationId, message, elements, pageUrl } = payload;
+  const { conversationId, message, elements, attachments, pageUrl } = payload;
 
   logger.info('Processing chat message', {
     conversationId,
     elementCount: elements.length,
+    attachmentCount: attachments?.length || 0,
     pageUrl,
   });
 
   try {
-    await sessionManager.executeChat(conversationId, message, elements, pageUrl, {
+    await sessionManager.executeChat(conversationId, message, elements, attachments, pageUrl, {
       onChunk: (content, messageId) => {
         logger.info('Sending chunk to client', { connectionId, messageId, contentLength: content.length });
         connectionManager.send(connectionId, {

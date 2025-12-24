@@ -69,11 +69,15 @@ export interface FileOperation {
   }>;
 }
 
+// File attachment - file path (server reads the content)
+export type FileAttachment = string;
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   elements?: ElementInfo[];
+  attachments?: FileAttachment[];
   fileOperations?: FileOperation[];
   timestamp: string;
 }

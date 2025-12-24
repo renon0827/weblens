@@ -14,7 +14,7 @@ import { ConversationList } from './components/ConversationList';
 import { ChatView } from './components/ChatView';
 import { MessageInput } from './components/MessageInput';
 import { ElementList } from './components/ElementList';
-import type { ServerMessage, ElementInfo, FileOperation } from '../shared/types';
+import type { ServerMessage, ElementInfo, FileOperation, FileAttachment } from '../shared/types';
 import type { ElementsUpdatedMessage } from '../shared/messages';
 
 export function App() {
@@ -147,7 +147,7 @@ export function App() {
     selectConversation(id);
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachments: FileAttachment[] = []) => {
     let convId = activeConversationId.value;
 
     // Create conversation if none active
@@ -168,7 +168,7 @@ export function App() {
     }
 
     // Add user message to local state
-    addUserMessage(content, selectedElements.value);
+    addUserMessage(content, selectedElements.value, attachments);
 
     // Send via WebSocket
     isSending.value = true;
@@ -181,6 +181,7 @@ export function App() {
         conversationId: convId,
         message: content,
         elements: selectedElements.value,
+        attachments: attachments.length > 0 ? attachments : undefined,
         pageUrl,
       },
     });

@@ -484,12 +484,141 @@ body {
 }
 
 /* Message Input */
+.message-input-container {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-color);
+}
+
+.attachments-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 0;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.attachment-icon {
+  font-size: 14px;
+}
+
+.attachment-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.btn-remove-attachment {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.btn-remove-attachment:hover {
+  color: var(--error-color);
+}
+
 .message-input {
   display: flex;
   gap: 8px;
   padding: 12px;
-  border-top: 1px solid var(--border-color);
   background: var(--bg-color);
+}
+
+.btn-attach {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-attach:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.btn-attach:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.path-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.path-input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.path-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-add-path {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-add-path:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-add-path:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cancel-path {
+  padding: 6px 10px;
+  font-size: 14px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.btn-cancel-path:hover {
+  background: var(--bg-tertiary);
+  color: var(--error-color);
 }
 
 .message-input textarea {
@@ -637,4 +766,209 @@ body {
 .diff-remove {
   background: rgba(239, 68, 68, 0.2);
   color: #ef4444;
+}
+
+/* File Browser */
+.file-browser-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.file-browser {
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.file-browser-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-browser-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.file-browser-header .btn-close {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.file-browser-header .btn-close:hover {
+  color: var(--text-primary);
+}
+
+.file-browser-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.file-browser-toolbar button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.file-browser-toolbar button:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.file-browser-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.file-browser-toolbar .current-path {
+  flex: 1;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 28px;
+  padding-left: 8px;
+}
+
+.file-browser-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+  max-height: 400px;
+}
+
+.file-browser-loading,
+.file-browser-error,
+.file-browser-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.file-browser-error {
+  color: var(--error-color);
+}
+
+.file-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-entry:hover {
+  background: var(--bg-secondary);
+}
+
+.file-entry.selected {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid var(--primary-color);
+}
+
+.file-entry.is-directory {
+  font-weight: 500;
+}
+
+.file-entry .file-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.file-entry .file-name {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-entry .file-size {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.file-browser-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.file-browser-footer .selected-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.file-browser-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.file-browser-actions .btn-cancel {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.file-browser-actions .btn-cancel:hover {
+  background: var(--bg-tertiary);
+}
+
+.file-browser-actions .btn-confirm {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.file-browser-actions .btn-confirm:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.file-browser-actions .btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -1,6 +1,6 @@
 import { useCallback } from 'preact/hooks';
 import { signal, computed } from '@preact/signals';
-import type { Conversation, ConversationWithMessages, Message, ElementInfo, FileOperation } from '../../shared/types';
+import type { Conversation, ConversationWithMessages, Message, ElementInfo, FileOperation, FileAttachment } from '../../shared/types';
 
 const API_BASE = 'http://localhost:3456/api';
 
@@ -88,12 +88,13 @@ export function useConversation() {
     }
   }, []);
 
-  const addUserMessage = useCallback((content: string, elements?: ElementInfo[]) => {
+  const addUserMessage = useCallback((content: string, elements?: ElementInfo[], attachments?: FileAttachment[]) => {
     const message: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content,
       elements: elements && elements.length > 0 ? elements : undefined,
+      attachments: attachments && attachments.length > 0 ? attachments : undefined,
       timestamp: new Date().toISOString(),
     };
     messages.value = [...messages.value, message];

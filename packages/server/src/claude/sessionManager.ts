@@ -1,7 +1,7 @@
 import { ClaudeExecutor, type ClaudeExecutorCallbacks, type FileOperation } from './executor';
 import { buildPrompt } from './promptBuilder';
 import { setSessionId, addMessage, getConversation, updateConversation } from '../storage/fileStore';
-import type { ElementInfo, Message, FileOperation as StorageFileOperation } from '../storage/types';
+import type { ElementInfo, FileAttachment, Message, FileOperation as StorageFileOperation } from '../storage/types';
 import { logger } from '../utils/logger';
 import { generateTitle } from '../utils/titleGenerator';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,6 +18,7 @@ export class SessionManager {
     conversationId: string,
     message: string,
     elements: ElementInfo[],
+    attachments: FileAttachment[] | undefined,
     pageUrl: string | undefined,
     callbacks: {
       onChunk: (content: string, messageId: string) => void;
@@ -39,6 +40,7 @@ export class SessionManager {
       role: 'user',
       content: message,
       elements: elements.length > 0 ? elements : undefined,
+      attachments: attachments && attachments.length > 0 ? attachments : undefined,
       timestamp: new Date().toISOString(),
     };
     await addMessage(conversationId, userMessage);
@@ -50,7 +52,7 @@ export class SessionManager {
       logger.info(`Auto-generated title for conversation ${conversationId}`, { title: autoTitle });
     }
 
-    const prompt = buildPrompt(message, elements, pageUrl);
+    const prompt = buildPrompt(message, elements, attachments, pageUrl);
     const executor = new ClaudeExecutor();
     const assistantMessageId = uuidv4();
 
