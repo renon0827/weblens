@@ -54,11 +54,27 @@ export interface ParentInfo {
   className: string;
 }
 
+export interface FileOperation {
+  type: 'read' | 'edit' | 'write' | 'create' | 'delete';
+  filePath: string;
+  toolName: string;
+  oldString?: string;
+  newString?: string;
+  patch?: Array<{
+    oldStart: number;
+    oldLines: number;
+    newStart: number;
+    newLines: number;
+    lines: string[];
+  }>;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   elements?: ElementInfo[];
+  fileOperations?: FileOperation[];
   timestamp: string;
 }
 

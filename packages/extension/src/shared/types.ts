@@ -67,6 +67,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   elements?: ElementInfo[];
+  fileOperations?: FileOperation[];
   timestamp: string;
 }
 
@@ -105,6 +106,24 @@ export interface AbortMessage {
 
 export type ClientMessage = ChatMessage | AbortMessage;
 
+// File operation types
+export interface FileOperation {
+  type: 'read' | 'edit' | 'write' | 'create' | 'delete';
+  filePath: string;
+  toolName: string;
+  oldString?: string;
+  newString?: string;
+  patch?: PatchHunk[];
+}
+
+export interface PatchHunk {
+  oldStart: number;
+  oldLines: number;
+  newStart: number;
+  newLines: number;
+  lines: string[];
+}
+
 // WebSocket message types (Server -> Client)
 export interface ConnectedMessage {
   type: 'connected';
@@ -141,7 +160,16 @@ export interface ErrorMessage {
   };
 }
 
-export type ServerMessage = ConnectedMessage | ChunkMessage | CompleteMessage | ErrorMessage;
+export interface FileOperationMessage {
+  type: 'file_operation';
+  payload: {
+    conversationId: string;
+    messageId: string;
+    operation: FileOperation;
+  };
+}
+
+export type ServerMessage = ConnectedMessage | ChunkMessage | CompleteMessage | ErrorMessage | FileOperationMessage;
 
 // Error codes
 export type ErrorCode =

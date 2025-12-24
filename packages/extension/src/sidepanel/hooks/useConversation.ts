@@ -1,6 +1,6 @@
 import { useCallback } from 'preact/hooks';
 import { signal, computed } from '@preact/signals';
-import type { Conversation, ConversationWithMessages, Message, ElementInfo } from '../../shared/types';
+import type { Conversation, ConversationWithMessages, Message, ElementInfo, FileOperation } from '../../shared/types';
 
 const API_BASE = 'http://localhost:3456/api';
 
@@ -100,11 +100,12 @@ export function useConversation() {
     return message;
   }, []);
 
-  const addAssistantMessage = useCallback((id: string, content: string) => {
+  const addAssistantMessage = useCallback((id: string, content: string, fileOperations?: FileOperation[]) => {
     const message: Message = {
       id,
       role: 'assistant',
       content,
+      fileOperations: fileOperations && fileOperations.length > 0 ? fileOperations : undefined,
       timestamp: new Date().toISOString(),
     };
     messages.value = [...messages.value, message];

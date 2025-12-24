@@ -1,14 +1,15 @@
 import { useEffect, useRef } from 'preact/hooks';
-import type { Message } from '../../shared/types';
+import type { Message, FileOperation } from '../../shared/types';
 
 interface ChatViewProps {
   messages: Message[];
   streamingContent: string;
   streamingMessageId: string | null;
   isProcessing: boolean; // True while waiting for or receiving response
+  fileOperations: FileOperation[];
 }
 
-export function ChatView({ messages, streamingContent, streamingMessageId, isProcessing }: ChatViewProps) {
+export function ChatView({ messages, streamingContent, streamingMessageId, isProcessing, fileOperations }: ChatViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,6 +81,40 @@ export function ChatView({ messages, streamingContent, streamingMessageId, isPro
                   </div>
                 </details>
               )}
+              {/* Show saved file operations for assistant messages */}
+              {msg.role === 'assistant' && msg.fileOperations && msg.fileOperations.length > 0 && (
+                <details class="file-operations-details">
+                  <summary class="file-operations-summary">
+                    📁 ファイル変更 ({msg.fileOperations.length}件)
+                  </summary>
+                  <div class="file-operations-list">
+                    {msg.fileOperations.map((op, index) => (
+                      <div key={index} class={`file-operation file-operation-${op.type}`}>
+                        <div class="file-operation-header">
+                          <span class="file-operation-type">
+                            {op.type === 'read' ? '📖 読込' : op.type === 'edit' ? '✏️ 編集' : op.type === 'write' || op.type === 'create' ? '📝 作成' : op.type === 'delete' ? '🗑️ 削除' : '📄 変更'}
+                          </span>
+                          <code class="file-operation-path">{op.filePath}</code>
+                        </div>
+                        {op.patch && op.patch.length > 0 && (
+                          <pre class="file-operation-diff">
+                            {op.patch.map((hunk) => 
+                              hunk.lines.map((line, lineIndex) => (
+                                <div 
+                                  key={lineIndex} 
+                                  class={`diff-line ${line.startsWith('+') ? 'diff-add' : line.startsWith('-') ? 'diff-remove' : ''}`}
+                                >
+                                  {line}
+                                </div>
+                              ))
+                            )}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
             </div>
           ))}
           {/* Show processing indicator (thinking or streaming) */}
@@ -91,6 +126,40 @@ export function ChatView({ messages, streamingContent, streamingMessageId, isPro
               <div class="message-content">
                 {isStreaming && formatMessage(streamingContent)}
               </div>
+              {/* Show file operations during streaming */}
+              {fileOperations.length > 0 && (
+                <details class="file-operations-details">
+                  <summary class="file-operations-summary">
+                    📁 ファイル変更 ({fileOperations.length}件)
+                  </summary>
+                  <div class="file-operations-list">
+                    {fileOperations.map((op, index) => (
+                      <div key={index} class={`file-operation file-operation-${op.type}`}>
+                        <div class="file-operation-header">
+                          <span class="file-operation-type">
+                            {op.type === 'read' ? '📖 読込' : op.type === 'edit' ? '✏️ 編集' : op.type === 'write' || op.type === 'create' ? '📝 作成' : op.type === 'delete' ? '🗑️ 削除' : '📄 変更'}
+                          </span>
+                          <code class="file-operation-path">{op.filePath}</code>
+                        </div>
+                        {op.patch && op.patch.length > 0 && (
+                          <pre class="file-operation-diff">
+                            {op.patch.map((hunk) => 
+                              hunk.lines.map((line, lineIndex) => (
+                                <div 
+                                  key={lineIndex} 
+                                  class={`diff-line ${line.startsWith('+') ? 'diff-add' : line.startsWith('-') ? 'diff-remove' : ''}`}
+                                >
+                                  {line}
+                                </div>
+                              ))
+                            )}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
               <div class="message-status">
                 <span class="status-indicator">
                   <span class="dot">.</span>

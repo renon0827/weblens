@@ -1,7 +1,7 @@
-import { ClaudeExecutor, type ClaudeExecutorCallbacks } from './executor';
+import { ClaudeExecutor, type ClaudeExecutorCallbacks, type FileOperation } from './executor';
 import { buildPrompt } from './promptBuilder';
 import { setSessionId, addMessage, getConversation, updateConversation } from '../storage/fileStore';
-import type { ElementInfo, Message } from '../storage/types';
+import type { ElementInfo, Message, FileOperation as StorageFileOperation } from '../storage/types';
 import { logger } from '../utils/logger';
 import { generateTitle } from '../utils/titleGenerator';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +23,7 @@ export class SessionManager {
       onChunk: (content: string, messageId: string) => void;
       onComplete: (fullContent: string, messageId: string) => void;
       onError: (error: string) => void;
+      onFileOperation?: (operation: FileOperation, messageId: string) => void;
     }
   ): Promise<void> {
     const conversation = await getConversation(conversationId);
@@ -59,6 +60,7 @@ export class SessionManager {
     });
 
     let fullContent = '';
+    const collectedFileOperations: StorageFileOperation[] = [];
 
     const executorCallbacks: ClaudeExecutorCallbacks = {
       onChunk: (content) => {
@@ -75,11 +77,12 @@ export class SessionManager {
           await setSessionId(conversationId, sessionId);
         }
 
-        // Save assistant message
+        // Save assistant message with file operations
         const assistantMessage: Message = {
           id: assistantMessageId,
           role: 'assistant',
           content: fullContent,
+          fileOperations: collectedFileOperations.length > 0 ? collectedFileOperations : undefined,
           timestamp: new Date().toISOString(),
         };
         await addMessage(conversationId, assistantMessage);
@@ -95,6 +98,13 @@ export class SessionManager {
         if (!conversation.sessionId) {
           await setSessionId(conversationId, sessionId);
           logger.info(`Session ID saved for conversation ${conversationId}`, { sessionId });
+        }
+      },
+      onFileOperation: (operation) => {
+        // Collect file operations for saving with the message
+        collectedFileOperations.push(operation as StorageFileOperation);
+        if (callbacks.onFileOperation) {
+          callbacks.onFileOperation(operation, assistantMessageId);
         }
       },
     };

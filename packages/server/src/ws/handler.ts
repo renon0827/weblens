@@ -125,6 +125,17 @@ async function handleChatMessage(connectionId: string, payload: unknown): Promis
           : 'CLAUDE_EXECUTION_ERROR';
         sendError(connectionId, conversationId, error, code);
       },
+      onFileOperation: (operation, messageId) => {
+        logger.info('Sending file operation to client', { connectionId, messageId, filePath: operation.filePath });
+        connectionManager.send(connectionId, {
+          type: 'file_operation',
+          payload: {
+            conversationId,
+            messageId,
+            operation,
+          },
+        });
+      },
     });
   } catch (err) {
     logger.error('Chat execution error', err);

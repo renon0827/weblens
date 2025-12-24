@@ -2,14 +2,51 @@ import { spawn, type ChildProcess } from 'child_process';
 import { logger } from '../utils/logger';
 
 export interface ClaudeStreamMessage {
-  type: 'assistant' | 'result' | 'system';
+  type: 'assistant' | 'result' | 'system' | 'user';
   subtype?: string;
   content?: string;
   result?: string;
   session_id?: string;
   message?: {
-    content?: Array<{ type: string; text?: string }>;
+    content?: Array<{ type: string; text?: string; name?: string; id?: string; input?: Record<string, unknown> }>;
   };
+  tool_use_result?: {
+    filePath?: string;
+    oldString?: string;
+    newString?: string;
+    structuredPatch?: Array<{
+      oldStart: number;
+      oldLines: number;
+      newStart: number;
+      newLines: number;
+      lines: string[];
+    }>;
+    type?: string;
+    file?: {
+      filePath: string;
+      content: string;
+    };
+  };
+}
+
+interface PendingToolUse {
+  name: string;
+  input: Record<string, unknown>;
+}
+
+export interface FileOperation {
+  type: 'read' | 'edit' | 'write' | 'create' | 'delete';
+  filePath: string;
+  toolName: string;
+  oldString?: string;
+  newString?: string;
+  patch?: Array<{
+    oldStart: number;
+    oldLines: number;
+    newStart: number;
+    newLines: number;
+    lines: string[];
+  }>;
 }
 
 export interface ClaudeExecutorCallbacks {
@@ -17,6 +54,7 @@ export interface ClaudeExecutorCallbacks {
   onComplete: (fullContent: string, sessionId?: string) => void;
   onError: (error: string) => void;
   onSessionId: (sessionId: string) => void;
+  onFileOperation?: (operation: FileOperation) => void;
 }
 
 export class ClaudeExecutor {
@@ -49,6 +87,8 @@ export class ClaudeExecutor {
       let fullContent = '';
       let extractedSessionId: string | undefined;
       let buffer = '';
+      // Track pending tool uses to match with results
+      const pendingToolUses = new Map<string, PendingToolUse>();
 
       this.process.stdout?.on('data', (data: Buffer) => {
         if (this.isAborted) return;
@@ -80,10 +120,92 @@ export class ClaudeExecutor {
                     fullContent += block.text;
                     callbacks.onChunk(block.text);
                   }
+                  // Track tool_use for file operations
+                  if (block.type === 'tool_use' && block.name && block.id) {
+                    pendingToolUses.set(block.id, {
+                      name: block.name,
+                      input: block.input || {},
+                    });
+                    logger.debug('Tracking tool use', { id: block.id, name: block.name });
+                  }
                 }
               } else if (message.content) {
                 fullContent += message.content;
                 callbacks.onChunk(message.content);
+              }
+            }
+
+            // Handle tool_use_result for file operations
+            if (message.type === 'user' && callbacks.onFileOperation) {
+              const result = message.tool_use_result;
+              
+              // Get tool_use_id from message content
+              const messageContent = (message as { message?: { content?: Array<{ tool_use_id?: string }> } }).message?.content;
+              const toolUseId = messageContent?.[0]?.tool_use_id;
+              const pendingTool = toolUseId ? pendingToolUses.get(toolUseId) : undefined;
+              
+              // Handle Read operations (type === 'text' with file info)
+              if (result?.type === 'text' && result?.file?.filePath) {
+                // This is a Read operation
+                const operation: FileOperation = {
+                  type: 'read',
+                  filePath: result.file.filePath,
+                  toolName: 'Read',
+                };
+                callbacks.onFileOperation(operation);
+                logger.info('File operation detected', { type: operation.type, filePath: result.file.filePath });
+                if (toolUseId) {
+                  pendingToolUses.delete(toolUseId);
+                }
+              } else if (result?.filePath && result?.structuredPatch && result.structuredPatch.length > 0) {
+                // This is an Edit operation (has actual changes)
+                const operation: FileOperation = {
+                  type: 'edit',
+                  filePath: result.filePath,
+                  toolName: 'Edit',
+                  oldString: result.oldString,
+                  newString: result.newString,
+                  patch: result.structuredPatch,
+                };
+                callbacks.onFileOperation(operation);
+                logger.info('File operation detected', { type: operation.type, filePath: result.filePath });
+                if (toolUseId) {
+                  pendingToolUses.delete(toolUseId);
+                }
+              } else if (result?.type === 'create' && result?.filePath) {
+                // This is a Write/Create operation
+                const operation: FileOperation = {
+                  type: 'create',
+                  filePath: result.filePath,
+                  toolName: 'Write',
+                };
+                callbacks.onFileOperation(operation);
+                logger.info('File operation detected', { type: operation.type, filePath: result.filePath });
+                if (toolUseId) {
+                  pendingToolUses.delete(toolUseId);
+                }
+              } else if (pendingTool?.name === 'Bash') {
+                // Check if this is a file deletion command
+                const command = String(pendingTool.input.command || '');
+                const rmMatch = command.match(/\brm\s+(?:-[rf]+\s+)?(.+)/);
+                if (rmMatch && rmMatch[1]) {
+                  const filePath = rmMatch[1].trim().replace(/['"]/g, '');
+                  const operation: FileOperation = {
+                    type: 'delete',
+                    filePath: filePath,
+                    toolName: 'Bash (rm)',
+                  };
+                  callbacks.onFileOperation(operation);
+                  logger.info('File operation detected', { type: operation.type, filePath });
+                }
+                if (toolUseId) {
+                  pendingToolUses.delete(toolUseId);
+                }
+              } else {
+                // Clean up pending tool use for other operations
+                if (toolUseId) {
+                  pendingToolUses.delete(toolUseId);
+                }
               }
             }
 

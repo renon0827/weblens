@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, useRef } from 'preact/hooks';
 import { useWebSocket } from './hooks/useWebSocket';
 import {
   useConversation,
@@ -14,7 +14,7 @@ import { ConversationList } from './components/ConversationList';
 import { ChatView } from './components/ChatView';
 import { MessageInput } from './components/MessageInput';
 import { ElementList } from './components/ElementList';
-import type { ServerMessage, ElementInfo } from '../shared/types';
+import type { ServerMessage, ElementInfo, FileOperation } from '../shared/types';
 import type { ElementsUpdatedMessage } from '../shared/messages';
 
 export function App() {
@@ -34,6 +34,13 @@ export function App() {
 
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fileOperations, setFileOperations] = useState<FileOperation[]>([]);
+  const fileOperationsRef = useRef<FileOperation[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    fileOperationsRef.current = fileOperations;
+  }, [fileOperations]);
 
   // Fetch conversations on mount
   useEffect(() => {
@@ -51,12 +58,13 @@ export function App() {
           break;
 
         case 'complete':
-          // Add the assistant message to the messages array
-          addAssistantMessage(message.payload.messageId, message.payload.fullContent);
+          // Add the assistant message to the messages array with file operations
+          addAssistantMessage(message.payload.messageId, message.payload.fullContent, fileOperationsRef.current);
           currentStreamingContent.value = '';
           setStreamingMessageId(null);
           setIsProcessing(false);
           isSending.value = false;
+          setFileOperations([]);
           // Refresh conversation list to update titles
           fetchConversations();
           break;
@@ -67,6 +75,11 @@ export function App() {
           setStreamingMessageId(null);
           setIsProcessing(false);
           isSending.value = false;
+          setFileOperations([]);
+          break;
+
+        case 'file_operation':
+          setFileOperations((prev) => [...prev, message.payload.operation]);
           break;
       }
     });
@@ -234,6 +247,7 @@ export function App() {
             streamingContent={currentStreamingContent.value}
             streamingMessageId={streamingMessageId}
             isProcessing={isProcessing}
+            fileOperations={fileOperations}
           />
 
           {activeConversationId.value && (

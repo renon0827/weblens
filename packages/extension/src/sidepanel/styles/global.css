@@ -531,3 +531,110 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* File Operations */
+.file-operations-details {
+  margin-top: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.file-operations-summary {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-operations-summary:hover {
+  background: var(--bg-tertiary);
+}
+
+.file-operations-summary::-webkit-details-marker {
+  margin-right: 6px;
+}
+
+.file-operations-list {
+  padding: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.file-operation {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.file-operation:last-child {
+  margin-bottom: 0;
+}
+
+.file-operation-read {
+  border-left: 3px solid var(--primary-color);
+}
+
+.file-operation-edit {
+  border-left: 3px solid var(--warning-color);
+}
+
+.file-operation-write,
+.file-operation-create {
+  border-left: 3px solid var(--success-color);
+}
+
+/* Create type alias for write in shared types */
+
+.file-operation-delete {
+  border-left: 3px solid var(--error-color);
+}
+
+.file-operation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+}
+
+.file-operation-type {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.file-operation-path {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--primary-color);
+  word-break: break-all;
+}
+
+.file-operation-diff {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-family: monospace;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  overflow-x: auto;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.diff-line {
+  white-space: pre;
+}
+
+.diff-add {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.diff-remove {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
